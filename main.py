@@ -37,35 +37,23 @@ def demo_expired() -> bool:
         return False
 
 # ── Notificaciones de interés ──────────────────────────────────────────────────
-NOTIFY_TELEGRAM_TOKEN   = os.getenv("NOTIFY_TELEGRAM_TOKEN", "")
-NOTIFY_TELEGRAM_CHAT_ID = os.getenv("NOTIFY_TELEGRAM_CHAT_ID", "")
+N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "https://n8n-produccion.navi-ol.xyz/webhook/1e166278-bf44-47d7-b2da-79c501300a88")
 
 async def notify_interest(business_name: str, timestamp: str, extra: str = ""):
-    """Envía notificación a Telegram cuando un cliente muestra interés."""
-    msg = (
-        f"🔔 *Nuevo Interés en Demo*\n\n"
-        f"🏢 *Negocio:* {business_name}\n"
-        f"⏰ *Hora:* {timestamp}\n"
-        f"📄 *Demo:* {SOURCE_URL}"
-    )
-    if extra:
-        msg += f"\n💬 *Nota:* {extra}"
-
-    if NOTIFY_TELEGRAM_TOKEN and NOTIFY_TELEGRAM_CHAT_ID:
-        try:
-            async with httpx.AsyncClient(timeout=10) as client:
-                await client.post(
-                    f"https://api.telegram.org/bot{NOTIFY_TELEGRAM_TOKEN}/sendMessage",
-                    json={
-                        "chat_id": NOTIFY_TELEGRAM_CHAT_ID,
-                        "text": msg,
-                        "parse_mode": "Markdown"
-                    }
-                )
-        except Exception as e:
-            print(f"[Notify Error] Telegram: {e}")
-    else:
-        print(f"[Notify] {msg}")
+    """Envía notificación al webhook de n8n cuando un cliente muestra interés."""
+    payload = {
+        "event": "demo_interest",
+        "business_name": business_name,
+        "timestamp": timestamp,
+        "source_url": SOURCE_URL,
+        "notes": extra
+    }
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            await client.post(N8N_WEBHOOK_URL, json=payload)
+            print(f"[Notify] n8n Webhook llamado para {business_name}")
+    except Exception as e:
+        print(f"[Notify Error] n8n Webhook: {e}")
 
 # ── System Prompt ──────────────────────────────────────────────────────────────
 SYSTEM_PROMPT_FILE = Path(__file__).parent / "system_prompt.txt"
