@@ -10,21 +10,21 @@ BASE DE CONOCIMIENTOS (responde basándote ÚNICAMENTE en esta información):
 # Base de Conocimientos de Tarrazo Inmobiliaria
 
 ## 1. Descripción general
-Tarrazo Inmobiliaria es una agencia especializada en la compra, venta y alquiler de propiedades en diversas localidades. Ofrecen un servicio personalizado y cuentan con un equipo de expertos en el sector inmobiliario.
+Tarrazo Inmobiliaria es una agencia especializada en la compra, venta y alquiler de propiedades en diversas localidades. Ofrecen un servicio personalizado y profesional, ayudando a los clientes a encontrar la casa de sus sueños con las mejores condiciones.
 
 ## 2. Contacto
-- **Teléfonos**: +34 639 12 60 69
-- **Email**: info@tarrazoinmobiliaria.com
-- **Dirección**: No disponible
-- **Horarios**: No disponible
+- **Teléfonos:** +34 639 12 60 69
+- **Email:** info@tarrazoinmobiliaria.com
+- **Dirección:** No disponible
+- **Horarios:** No disponible
 
 ## 3. Servicios
 - Compra y venta de propiedades
 - Alquiler de inmuebles
-- Gestión de propiedades en construcción
 - Asesoramiento en inversiones inmobiliarias
-- Venta y alquiler de propiedades de lujo
-- Orientación del mercado inmobiliario
+- Gestión de propiedades en alquiler
+- Venta de propiedades en exclusiva
+- Información y orientación del mercado inmobiliario
 
 ## 4. Zonas y tipos de propiedades
 ### Zonas donde opera:
@@ -69,20 +69,20 @@ Tarrazo Inmobiliaria es una agencia especializada en la compra, venta y alquiler
 - Piso
 
 ## 5. Equipo / Agentes
-- **No disponible**
+- **Nombres y contactos:** No disponible
 
 ## 6. Preguntas frecuentes
 1. **¿Qué tipos de propiedades ofrecen?**
    - Ofrecen una amplia variedad de propiedades, incluyendo apartamentos, chalets, casas unifamiliares, locales comerciales, y más.
 
 2. **¿Dónde se encuentran las propiedades en venta?**
-   - Las propiedades están ubicadas en diversas localidades como Alcoi, Valencia, Altea, y Muro de Alcoy, entre otras.
+   - Las propiedades están ubicadas en diversas localidades como Alcoi, Altea, Calpe, y Valencia, entre otras.
 
 3. **¿Pueden ayudarme a vender mi propiedad?**
-   - Sí, ofrecen servicios de gestión para ayudar a vender o alquilar propiedades, asegurando la mejor información y orientación del mercado.
+   - Sí, ofrecen servicios para gestionar la venta de propiedades, asegurando que obtengas la mejor información y orientación del mercado.
 
-4. **¿Qué servicios adicionales ofrecen?**
-   - Además de la compra y venta, ofrecen asesoramiento en inversiones inmobiliarias y gestión de propiedades en construcción.
+4. **¿Qué servicios ofrecen para compradores?**
+   - Ayudan a los compradores a encontrar la casa de sus sueños y ofrecen asesoramiento sobre las mejores condiciones de compra.
 
 5. **¿Cómo puedo contactar con Tarrazo Inmobiliaria?**
    - Puedes contactarlos a través del teléfono +34 639 12 60 69 o por email a info@tarrazoinmobiliaria.com.
