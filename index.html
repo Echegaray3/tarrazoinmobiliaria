@@ -225,6 +225,65 @@
     .send-btn:active { transform: scale(0.93); }
     .send-btn svg { fill: #fff; width: 18px; height: 18px; }
     .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    /* Demo badge */
+    .demo-badge {
+      font-size: 9px;
+      background: rgba(255,255,255,0.2);
+      padding: 2px 8px;
+      border-radius: 20px;
+      color: rgba(255,255,255,0.9);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      font-weight: 600;
+      align-self: flex-start;
+      margin-top: 2px;
+    }
+    /* Interested button */
+    .interested-btn {
+      display: block;
+      width: calc(100% - 32px);
+      margin: 0 16px 10px;
+      padding: 10px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: transform 0.15s, opacity 0.2s;
+    }
+    .interested-btn:hover { transform: scale(1.02); }
+    .interested-btn:active { transform: scale(0.98); }
+    .interested-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    /* Expired overlay */
+    .expired-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.85);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+      padding: 32px;
+    }
+    .expired-overlay.visible { display: flex; }
+    .expired-overlay h2 { color: white; font-size: 22px; }
+    .expired-overlay p  { color: rgba(255,255,255,0.75); font-size: 14px; max-width: 320px; }
+    .expired-overlay a  {
+      margin-top: 8px;
+      background: var(--primary);
+      color: white;
+      padding: 12px 28px;
+      border-radius: 24px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -235,12 +294,13 @@
 
 <div class="chat-wrapper" id="chatWrapper">
   <div class="chat-header">
-    <div class="header-avatar"><img src='https://www.tarrazoinmobiliaria.com/crm/pages/agencies/tarrazo/assets/logo-alt.svg' style='width:36px; height:36px; object-fit:contain; border-radius: 50%; background: white; padding: 2px;'></div>
+    <div class="header-avatar">🤖</div>
     <div class="header-info">
       <div class="header-name">Tarrazo inmobiliaria</div>
       <div class="header-status">
         <span class="status-dot"></span> Asistente virtual activo
       </div>
+      <span class="demo-badge">Demo &middot; Navi</span>
     </div>
   </div>
 
@@ -270,24 +330,45 @@
       <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
     </button>
   </div>
+  <button class="interested-btn" id="interestedBtn">💼 Quiero este asistente para mi negocio</button>
+</div>
+
+<!-- Expired overlay -->
+<div class="expired-overlay" id="expiredOverlay">
+  <h2>⏱️ Demo Finalizada</h2>
+  <p>El período de demo de <strong>Tarrazo inmobiliaria</strong> ha concluido. Contacta con Navi para activar tu propio asistente.</p>
+  <a href="https://wa.me/34000000000?text=Hola%2C+me+interesa+el+asistente+para+Tarrazo inmobiliaria" target="_blank">Contactar con Navi →</a>
 </div>
 
 <script>
-  const chatWrapper= document.getElementById('chatWrapper');
-  const chatToggle = document.getElementById('chatToggle');
-  const messagesEl = document.getElementById('messages');
-  const inputEl    = document.getElementById('input');
-  const sendBtn    = document.getElementById('sendBtn');
-  const typingEl   = document.getElementById('typing');
-  const history    = [];
+  const chatWrapper   = document.getElementById('chatWrapper');
+  const chatToggle    = document.getElementById('chatToggle');
+  const messagesEl    = document.getElementById('messages');
+  const inputEl       = document.getElementById('input');
+  const sendBtn       = document.getElementById('sendBtn');
+  const typingEl      = document.getElementById('typing');
+  const interestedBtn = document.getElementById('interestedBtn');
+  const expiredOverlay= document.getElementById('expiredOverlay');
+  const history       = [];
 
+  // ── TTL check (client-side optional extra) ────────────────────────────────
+  async function checkExpired() {
+    try {
+      const r = await fetch('/health');
+      const d = await r.json();
+      if (d.status === 'expired') expiredOverlay.classList.add('visible');
+    } catch(_) {}
+  }
+  checkExpired();
+
+  // ── Toggle chat ──────────────────────────────────────────────────────────
   chatToggle.addEventListener('click', () => {
     chatWrapper.classList.toggle('open');
     if (chatWrapper.classList.contains('open')) {
-        chatToggle.innerHTML = '<span style="font-size:24px;color:white">✕</span>';
-        inputEl.focus();
+      chatToggle.innerHTML = '<span style="font-size:22px;color:white">✕</span>';
+      inputEl.focus();
     } else {
-        chatToggle.innerHTML = `<img src='https://www.tarrazoinmobiliaria.com/crm/pages/agencies/tarrazo/assets/logo-alt.svg' style='width:80%; height:80%; object-fit:contain; border-radius: 4px;'>`;
+      chatToggle.innerHTML = '💬';
     }
   });
 
@@ -319,19 +400,18 @@
     inputEl.value = '';
     inputEl.style.height = 'auto';
     sendBtn.disabled = true;
-
     history.push({ role: 'user', content: text });
     addMessage('user', text);
     typingEl.classList.add('visible');
     messagesEl.scrollTop = messagesEl.scrollHeight;
-
     try {
-      const res = await fetch('/chat', {
+      const res  = await fetch('/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: history })
       });
       const data = await res.json();
+      if (data.expired) expiredOverlay.classList.add('visible');
       const reply = data.reply || 'Lo siento, hubo un error al procesar tu pregunta.';
       history.push({ role: 'assistant', content: reply });
       addMessage('bot', reply);
@@ -351,6 +431,24 @@
   inputEl.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+  });
+
+  // ── Interested button ────────────────────────────────────────────────────
+  interestedBtn.addEventListener('click', async () => {
+    interestedBtn.disabled = true;
+    interestedBtn.textContent = 'Enviando...';
+    try {
+      const res  = await fetch('/interested', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Interés desde widget de demo' })
+      });
+      const data = await res.json();
+      interestedBtn.textContent = '✅ ' + (data.message || '¡Gracias! Te contactaremos pronto.');
+    } catch(e) {
+      interestedBtn.textContent = '⚠️ Error al enviar. Inténtalo de nuevo.';
+      interestedBtn.disabled = false;
+    }
   });
 </script>
 </body>

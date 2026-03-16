@@ -2,6 +2,7 @@ import os
 import asyncio
 import time
 from collections import defaultdict
+from datetime import datetime, timezone
 import httpx
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -22,6 +23,51 @@ EVOLUTION_API_URL       = os.getenv("EVOLUTION_API_URL", "")
 EVOLUTION_API_KEY       = os.getenv("EVOLUTION_API_KEY", "")
 EVOLUTION_INSTANCE_NAME = os.getenv("EVOLUTION_INSTANCE_NAME", "")
 
+# ── TTL de demo ────────────────────────────────────────────────────────────────
+# Formato ISO UTC: "2026-03-17T20:00:00Z". Si vacío, sin expiración.
+DEMO_EXPIRES_AT = os.getenv("DEMO_EXPIRES_AT", "")
+
+def demo_expired() -> bool:
+    if not DEMO_EXPIRES_AT:
+        return False
+    try:
+        expires = datetime.fromisoformat(DEMO_EXPIRES_AT.replace("Z", "+00:00"))
+        return datetime.now(timezone.utc) > expires
+    except Exception:
+        return False
+
+# ── Notificaciones de interés ──────────────────────────────────────────────────
+NOTIFY_TELEGRAM_TOKEN   = os.getenv("NOTIFY_TELEGRAM_TOKEN", "")
+NOTIFY_TELEGRAM_CHAT_ID = os.getenv("NOTIFY_TELEGRAM_CHAT_ID", "")
+
+async def notify_interest(business_name: str, timestamp: str, extra: str = ""):
+    """Envía notificación a Telegram cuando un cliente muestra interés."""
+    msg = (
+        f"🔔 *Nuevo Interés en Demo*\n\n"
+        f"🏢 *Negocio:* {business_name}\n"
+        f"⏰ *Hora:* {timestamp}\n"
+        f"📄 *Demo:* {SOURCE_URL}"
+    )
+    if extra:
+        msg += f"\n💬 *Nota:* {extra}"
+
+    if NOTIFY_TELEGRAM_TOKEN and NOTIFY_TELEGRAM_CHAT_ID:
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                await client.post(
+                    f"https://api.telegram.org/bot{NOTIFY_TELEGRAM_TOKEN}/sendMessage",
+                    json={
+                        "chat_id": NOTIFY_TELEGRAM_CHAT_ID,
+                        "text": msg,
+                        "parse_mode": "Markdown"
+                    }
+                )
+        except Exception as e:
+            print(f"[Notify Error] Telegram: {e}")
+    else:
+        print(f"[Notify] {msg}")
+
+# ── System Prompt ──────────────────────────────────────────────────────────────
 SYSTEM_PROMPT_FILE = Path(__file__).parent / "system_prompt.txt"
 SYSTEM_PROMPT = SYSTEM_PROMPT_FILE.read_text(encoding="utf-8") if SYSTEM_PROMPT_FILE.exists() else (
     f"Eres el asistente virtual de {BUSINESS_NAME}. Responde basándote estrictamente en tus instrucciones."
@@ -32,12 +78,9 @@ openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
-
-# Rate Limiter State
 _rate_limits = defaultdict(list)
 
 def check_rate_limit(client_id: str):
-    """Verifica si el cliente ha excedido el límite de peticiones por minuto."""
     now = time.time()
     _rate_limits[client_id] = [ts for ts in _rate_limits[client_id] if now - ts < 60]
     if len(_rate_limits[client_id]) >= MAX_REQUESTS_PER_MINUTE:
@@ -46,7 +89,6 @@ def check_rate_limit(client_id: str):
 
 
 async def call_openai(messages: list, channel: str = "web") -> str:
-    """Llama a OpenAI usando la Base de Conocimientos estática (SYSTEM_PROMPT)."""
     response = await openai_client.chat.completions.create(
         model=OPENAI_MODEL,
         messages=[{"role": "system", "content": SYSTEM_PROMPT}] + messages,
@@ -69,14 +111,24 @@ async def root():
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "agent": BUSINESS_NAME, "model": OPENAI_MODEL}
+    expired = demo_expired()
+    return {
+        "status": "expired" if expired else "ok",
+        "agent": BUSINESS_NAME,
+        "model": OPENAI_MODEL,
+        "demo_expires_at": DEMO_EXPIRES_AT or "never"
+    }
 
 
 @app.post("/chat")
 async def chat(request: Request):
-    """Endpoint del chat web. Acepta {messages: [{role, content}]}"""
+    if demo_expired():
+        return JSONResponse({
+            "reply": f"⏱️ Esta demo de *{BUSINESS_NAME}* ha finalizado. Contacta con **Navi** para activar tu propio asistente virtual.",
+            "expired": True
+        })
+
     try:
-        # Rate Limiting por IP
         client_ip = request.client.host if request.client else "unknown"
         try:
             check_rate_limit(client_ip)
@@ -87,91 +139,68 @@ async def chat(request: Request):
         messages = body.get("messages", [])
         if not messages:
             return JSONResponse({"error": "messages vacíos"}, status_code=400)
-        
+
         reply = await call_openai(messages, channel="web")
         return {"reply": reply}
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
-
-@app.get("/proxy")
-async def proxy():
+@app.post("/interested")
+async def interested(request: Request):
+    """Recibe notificación de interés del cliente en el despliegue."""
     try:
-        async with httpx.AsyncClient(verify=False) as client:
-            r = await client.get(SOURCE_URL, headers={"User-Agent": "Mozilla/5.0"}, follow_redirects=True, timeout=15)
-            html = r.text
-            # Inject base tag to fix relative links
-            base_tag = f"<base href='{SOURCE_URL}'>"
-            if "<head>" in html:
-                html = html.replace("<head>", f"<head>{base_tag}")
-            elif "<head " in html:
-                # Basic string replacement heuristic
-                html = html.replace("<head ", f"<head>{base_tag}</head><head ", 1)
-            else:
-                html = base_tag + html
-            return HTMLResponse(content=html, status_code=200)
+        body = await request.json()
+        extra = body.get("message", "")
+        ts = datetime.now(timezone.utc).strftime("%d/%m/%Y %H:%M UTC")
+        await notify_interest(BUSINESS_NAME, ts, extra)
+        return {"status": "ok", "message": "¡Perfecto! Nos pondremos en contacto contigo pronto."}
     except Exception as e:
-        return HTMLResponse(content=f"Error loading {SOURCE_URL}: {e}")
+        return JSONResponse({"error": str(e)}, status_code=500)
 
 
 @app.post("/webhook")
 async def whatsapp_webhook(request: Request):
-    """Endpoint para Evolution API (WhatsApp). Procesa mensajes entrantes."""
+    """Endpoint para Evolution API (WhatsApp)."""
     try:
         body = await request.json()
-        
-        # Extraer evento y mensaje de Evolution API v2
         event = body.get("event", "")
         if event != "messages.upsert":
             return {"status": "ignored", "event": event}
-        
+
         data = body.get("data", {})
-        
-        # Ignorar mensajes propios
         if data.get("key", {}).get("fromMe", False):
             return {"status": "ignored", "reason": "own message"}
-        
-        # Extraer texto del mensaje
+
         message_content = data.get("message", {})
         text = (
             message_content.get("conversation") or
             message_content.get("extendedTextMessage", {}).get("text") or
             ""
         ).strip()
-        
+
         if not text:
             return {"status": "ignored", "reason": "no text content"}
-        
+
         remote_jid = data.get("key", {}).get("remoteJid", "")
-        
-        # Rate Limiting por número de teléfono
         if remote_jid:
             try:
                 check_rate_limit(remote_jid)
             except HTTPException as e:
                 return {"status": "rate_limited", "error": e.detail}
-        
-        # Generar respuesta
+
         reply = await call_openai([{"role": "user", "content": text}], channel="whatsapp")
-        
-        # Enviar respuesta via Evolution API
+
         if EVOLUTION_API_URL and EVOLUTION_API_KEY and EVOLUTION_INSTANCE_NAME:
             async with httpx.AsyncClient(timeout=15) as client:
                 await client.post(
                     f"{EVOLUTION_API_URL.rstrip('/')}/message/sendText/{EVOLUTION_INSTANCE_NAME}",
-                    headers={
-                        "apikey": EVOLUTION_API_KEY,
-                        "Content-Type": "application/json"
-                    },
-                    json={
-                        "number": remote_jid,
-                        "textMessage": {"text": reply}
-                    }
+                    headers={"apikey": EVOLUTION_API_KEY, "Content-Type": "application/json"},
+                    json={"number": remote_jid, "textMessage": {"text": reply}}
                 )
-        
+
         return {"status": "ok", "replied": True}
-    
+
     except Exception as e:
         print(f"[Webhook Error] {e}")
         return JSONResponse({"error": str(e)}, status_code=500)
