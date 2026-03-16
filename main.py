@@ -94,6 +94,27 @@ async def chat(request: Request):
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
+
+@app.get("/proxy")
+async def proxy():
+    try:
+        async with httpx.AsyncClient(verify=False) as client:
+            r = await client.get(SOURCE_URL, headers={"User-Agent": "Mozilla/5.0"}, follow_redirects=True, timeout=15)
+            html = r.text
+            # Inject base tag to fix relative links
+            base_tag = f"<base href='{SOURCE_URL}'>"
+            if "<head>" in html:
+                html = html.replace("<head>", f"<head>{base_tag}")
+            elif "<head " in html:
+                # Basic string replacement heuristic
+                html = html.replace("<head ", f"<head>{base_tag}</head><head ", 1)
+            else:
+                html = base_tag + html
+            return HTMLResponse(content=html, status_code=200)
+    except Exception as e:
+        return HTMLResponse(content=f"Error loading {SOURCE_URL}: {e}")
+
+
 @app.post("/webhook")
 async def whatsapp_webhook(request: Request):
     """Endpoint para Evolution API (WhatsApp). Procesa mensajes entrantes."""

@@ -229,9 +229,9 @@
 </head>
 <body>
 
-<iframe class="background-iframe" src="https://www.tarrazoinmobiliaria.com/" title="Fondo"></iframe>
+<iframe class="background-iframe" src="/proxy" title="Fondo"></iframe>
 
-<button id="chatToggle" class="chat-toggle-btn">💬</button>
+<button id="chatToggle" class="chat-toggle-btn"><img src='https://www.tarrazoinmobiliaria.com/crm/pages/agencies/tarrazo/assets/favicon.ico' style='width:100%; height:100%; border-radius:50%; object-fit:cover;'></button>
 
 <div class="chat-wrapper" id="chatWrapper">
   <div class="chat-header">
@@ -284,10 +284,10 @@
   chatToggle.addEventListener('click', () => {
     chatWrapper.classList.toggle('open');
     if (chatWrapper.classList.contains('open')) {
-        chatToggle.innerHTML = '✕';
+        chatToggle.innerHTML = '<span style="font-size:24px;color:white">✕</span>';
         inputEl.focus();
     } else {
-        chatToggle.innerHTML = '💬';
+        chatToggle.innerHTML = '<img src='https://www.tarrazoinmobiliaria.com/crm/pages/agencies/tarrazo/assets/favicon.ico' style='width:100%; height:100%; border-radius:50%; object-fit:cover;'>';
     }
   });
 
