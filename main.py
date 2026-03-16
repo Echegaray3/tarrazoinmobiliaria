@@ -50,7 +50,7 @@ async def notify_interest(business_name: str, timestamp: str, extra: str = ""):
     }
     try:
         async with httpx.AsyncClient(timeout=10) as client:
-            await client.post(N8N_WEBHOOK_URL, json=payload)
+            await client.get(N8N_WEBHOOK_URL, params=payload)
             print(f"[Notify] n8n Webhook llamado para {business_name}")
     except Exception as e:
         print(f"[Notify Error] n8n Webhook: {e}")
