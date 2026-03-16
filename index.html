@@ -238,11 +238,24 @@
       align-self: flex-start;
       margin-top: 2px;
     }
-    /* Interested button */
+    /* Interested form */
+    .interested-form {
+      padding: 0 16px 10px;
+    }
+    .interested-input {
+      width: 100%;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      margin-bottom: 8px;
+      outline: none;
+      font-family: inherit;
+    }
+    .interested-input:focus { border-color: var(--primary); }
     .interested-btn {
       display: block;
-      width: calc(100% - 32px);
-      margin: 0 16px 10px;
+      width: 100%;
       padding: 10px;
       background: linear-gradient(135deg, #10b981, #059669);
       color: white;
@@ -330,7 +343,10 @@
       <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
     </button>
   </div>
-  <button class="interested-btn" id="interestedBtn">💼 Quiero este asistente para mi negocio</button>
+  <div class="interested-form" id="interestedForm">
+    <input type="text" id="interestedNote" class="interested-input" placeholder="Opcional: Deja un número de teléfono, correo o nota" autocomplete="off" />
+    <button class="interested-btn" id="interestedBtn">💼 Quiero este asistente para mi negocio</button>
+  </div>
 </div>
 
 <!-- Expired overlay -->
@@ -434,14 +450,17 @@
   });
 
   // ── Interested button ────────────────────────────────────────────────────
+  const interestedNote = document.getElementById('interestedNote');
   interestedBtn.addEventListener('click', async () => {
+    const note = interestedNote.value.trim() || 'Interés desde widget de demo';
     interestedBtn.disabled = true;
+    interestedNote.disabled = true;
     interestedBtn.textContent = 'Enviando...';
     try {
       const res  = await fetch('/interested', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: 'Interés desde widget de demo' })
+        body: JSON.stringify({ message: note })
       });
       const data = await res.json();
       interestedBtn.textContent = '✅ ' + (data.message || '¡Gracias! Te contactaremos pronto.');
