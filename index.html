@@ -238,24 +238,11 @@
       align-self: flex-start;
       margin-top: 2px;
     }
-    /* Interested form */
-    .interested-form {
-      padding: 0 16px 10px;
-    }
-    .interested-input {
-      width: 100%;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 13px;
-      margin-bottom: 8px;
-      outline: none;
-      font-family: inherit;
-    }
-    .interested-input:focus { border-color: var(--primary); }
+    /* Interested button */
     .interested-btn {
       display: block;
-      width: 100%;
+      width: calc(100% - 32px);
+      margin: 0 16px 10px;
       padding: 10px;
       background: linear-gradient(135deg, #10b981, #059669);
       color: white;
@@ -343,9 +330,19 @@
       <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
     </button>
   </div>
-  <div class="interested-form" id="interestedForm">
-    <input type="text" id="interestedNote" class="interested-input" placeholder="Opcional: Deja un número de teléfono, correo o nota" autocomplete="off" />
-    <button class="interested-btn" id="interestedBtn">💼 Quiero este asistente para mi negocio</button>
+  <button class="interested-btn" id="interestedBtn">💼 Quiero este asistente para mi negocio</button>
+</div>
+
+<!-- Interest Form overlay -->
+<div class="expired-overlay" id="interestOverlay">
+  <div style="width: 80%; max-width: 320px; text-align: left; background: white; padding: 20px; border-radius: 12px; color: #333; display: flex; flex-direction: column; gap: 12px;">
+    <h3 style="margin: 0; font-size: 16px;">¿Interesado?</h3>
+    <p style="margin: 0; font-size: 13px; color: #555;">Si lo deseas, déjanos un correo, número de teléfono o una nota y te contactaremos.</p>
+    <textarea id="interestOverlayNote" style="width: 100%; height: 70px; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 10px; font-size: 13px; font-family: inherit; resize: none; outline: none;" placeholder="Opcional: Deja tu información de contacto..."></textarea>
+    <div style="display: flex; gap: 10px; width: 100%;">
+      <button id="cancelInterestBtn" style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: #e2e8f0; color: #475569; font-weight: 600; cursor: pointer; font-size: 13px;">Cancelar</button>
+      <button id="sendInterestBtn" style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: 600; cursor: pointer; font-size: 13px;">Enviar</button>
+    </div>
   </div>
 </div>
 
@@ -449,13 +446,28 @@
     this.style.height = Math.min(this.scrollHeight, 100) + 'px';
   });
 
-  // ── Interested button ────────────────────────────────────────────────────
-  const interestedNote = document.getElementById('interestedNote');
-  interestedBtn.addEventListener('click', async () => {
-    const note = interestedNote.value.trim() || 'Interés desde widget de demo';
-    interestedBtn.disabled = true;
-    interestedNote.disabled = true;
-    interestedBtn.textContent = 'Enviando...';
+  // ── Interested button con Modal ──────────────────────────────────────────
+  const interestOverlay     = document.getElementById('interestOverlay');
+  const interestOverlayNote = document.getElementById('interestOverlayNote');
+  const cancelInterestBtn   = document.getElementById('cancelInterestBtn');
+  const sendInterestBtn     = document.getElementById('sendInterestBtn');
+
+  interestedBtn.addEventListener('click', () => {
+    interestOverlay.classList.add('visible');
+    interestOverlayNote.focus();
+  });
+
+  cancelInterestBtn.addEventListener('click', () => {
+    interestOverlay.classList.remove('visible');
+    interestOverlayNote.value = '';
+    sendInterestBtn.textContent = 'Enviar';
+    sendInterestBtn.disabled = false;
+  });
+
+  sendInterestBtn.addEventListener('click', async () => {
+    const note = interestOverlayNote.value.trim() || 'Interés desde widget de demo';
+    sendInterestBtn.disabled = true;
+    sendInterestBtn.textContent = 'Enviando...';
     try {
       const res  = await fetch('/interested', {
         method: 'POST',
@@ -463,10 +475,13 @@
         body: JSON.stringify({ message: note })
       });
       const data = await res.json();
+      interestOverlay.classList.remove('visible');
       interestedBtn.textContent = '✅ ' + (data.message || '¡Gracias! Te contactaremos pronto.');
+      interestedBtn.disabled = true;
+      interestedBtn.style.background = '#059669';
     } catch(e) {
-      interestedBtn.textContent = '⚠️ Error al enviar. Inténtalo de nuevo.';
-      interestedBtn.disabled = false;
+      sendInterestBtn.textContent = '⚠️ Error. Reintentar';
+      sendInterestBtn.disabled = false;
     }
   });
 </script>
