@@ -23,9 +23,22 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', sans-serif;
-      background: var(--bg) url('https://image.thum.io/get/maxZip/1200/https://www.tarrazoinmobiliaria.com/') no-repeat center center fixed;
-      background-size: cover;
+      background: var(--bg);
       min-height: 100vh;
+      overflow: hidden; /* Prevent body scroll if iframe handles it */
+    }
+    .background-iframe {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      z-index: 0;
+    }
+    .chat-wrapper, .chat-toggle-btn {
+      /* Ensure chat stays above iframe */
+      z-index: 1000;
     }
     .chat-wrapper {
       position: fixed;
@@ -215,6 +228,8 @@
   </style>
 </head>
 <body>
+
+<iframe class="background-iframe" src="https://www.tarrazoinmobiliaria.com/" title="Fondo"></iframe>
 
 <button id="chatToggle" class="chat-toggle-btn">💬</button>
 
