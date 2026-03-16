@@ -9,27 +9,49 @@ BASE DE CONOCIMIENTOS (Usa esta información para responder, no inventes nada fu
 ---
 # Base de Conocimientos - Tarrazó Inmobiliaria
 
-## Servicios Ofrecidos
-- **Ventas de Propiedades**:
-  - Apartamentos
-  - Áticos
-  - Casas (unifamiliares, adosadas, de campo, de pueblo)
-  - Chalets/Villas
-  - Edificios
-  - Garajes
-  - Locales comerciales
-  - Masías
+## Servicios
+- **Tipo de Propiedades en Venta:**
+  - Apartamento
+  - Ático
+  - Casa
+  - Casa adosada
+  - Casa de campo
+  - Casa de pueblo
+  - Casa unifamiliar
+  - Chalet/Villa
+  - Edificio
+  - Garaje
+  - Local comercial
+  - Masía
   - Nave industrial
-  - Parcelas
-  - Pisos
+  - Parcela
+  - Piso
 
-- **Alquiler de Propiedades**: Información no especificada.
+- **Localidades Disponibles:**
+  - Albaida
+  - Alcoi
+  - Alcosser
+  - Alfaz del Pi
+  - Altea
+  - Atzeneta d'Albaida
+  - Beniarrés
+  - Benimarfull
+  - Benimasot
+  - Calpe
+  - Cocentaina
+  - Cuatretondeta
+  - El Campello
+  - Facheca
+  - Finestrat
+  - Gayanes
+  - Lorcha
+  - Moraira
+  - Muro de Alcoy
+  - Nucia-Hill
+  - Palomar
+  - Valencia
 
-## Tipos de Propiedades
-- **Por Localidad**: 
-  - Albaida, Alcoi, Alcosser, Alfaz del Pi, Altea, Atzeneta d'Albaida, Beniarrés, Benimarfull, Benimasot, Calpe, Cocentaina, Cuatretondeta, El Campello, Facheca, Finestrat, Gayanes, Lorcha, Moraira, Muro de Alcoy, Nucia-Hill, Palomar, Valencia.
-
-- **Por Precio**:
+- **Rango de Precios:**
   - Hasta 150.000 €
   - 150.000 a 350.000 €
   - 350.000 a 500.000 €
@@ -38,18 +60,16 @@ BASE DE CONOCIMIENTOS (Usa esta información para responder, no inventes nada fu
   - 850.000 a 1.000.000 €
   - Desde 1.000.000 €
 
-- **Por Habitaciones**:
+- **Habitaciones:**
   - 1 habitación
-  - Desde 2 hasta 10+ habitaciones
+  - Desde 2 habitaciones
+  - Desde 3 habitaciones
+  - Desde 4 habitaciones
+  - Desde 5 habitaciones
+  - De 6 a 9 habitaciones
+  - Desde 10 habitaciones
 
-- **Por Superficie**:
-  - Hasta 100 m²
-  - De 100 a 150 m²
-  - De 150 a 200 m²
-  - De 200 a 300 m²
-  - Desde 300 m²
-
-- **Por Baños**:
+- **Baños:**
   - 1 baño
   - 2 baños
   - 3+ baños
@@ -58,35 +78,46 @@ BASE DE CONOCIMIENTOS (Usa esta información para responder, no inventes nada fu
   - 6 a 9 baños
   - 10+ baños
 
+- **Superficie:**
+  - Hasta 100 m²
+  - De 100 a 150 m²
+  - De 150 a 200 m²
+  - De 200 a 300 m²
+  - Desde 300 m²
+
+- **Terreno:**
+  - Hasta 500 m²
+  - De 500 a 1000 m²
+  - De 1000 a 5000 m²
+  - De 5000 a 10000 m²
+  - Desde 10000 m²
+
 ## Propiedades Destacadas
 - Nave industrial de 700 m² en Muro de Alcoy - 130.000 €
-- Ático luminoso en Alcoy - 165.000 €
-- Piso en Valencia junto al Parque de Ayora - 270.000 €
+- Ático luminoso en Alcoi - 165.000 €
+- Piso junto al Parque de Ayora en Valencia - 270.000 €
 - Casa de pueblo acogedora en Lorcha - 90.000 €
 - Excelente casa en Muro de Alcoy - 260.000 €
 
 ## Contacto
-- **Página web**: [Tarrazó Inmobiliaria](https://www.tarrazoinmobiliaria.com/)
-- **Idiomas disponibles**: Español, English, Deutsch, Français, Nederlands, Italiano.
+- **Página Web:** [Tarrazó Inmobiliaria](https://www.tarrazoinmobiliaria.com/)
+- **Idiomas Disponibles:** Español, English, Deutsch, Français, Nederlands, Italiano
 
 ## Horarios
-- Información no especificada.
+- No se especifican horarios en el contenido extraído.
 
 ## FAQs
 - **¿Qué tipos de propiedades ofrecen?**
-  - Apartamentos, casas, chalets, locales comerciales, entre otros.
+  - Ofrecen apartamentos, casas, chalets, locales comerciales, entre otros.
 
 - **¿En qué localidades tienen propiedades?**
-  - Varias localidades en la Comunidad Valenciana, incluyendo Alcoi, Valencia, y Moraira.
+  - Tienen propiedades en localidades como Alcoi, Valencia, Moraira, entre otras.
 
-- **¿Cómo puedo vender mi casa?**
-  - Contactar a la agencia para más información sobre el proceso de venta.
+- **¿Cuál es el rango de precios de las propiedades?**
+  - Desde menos de 150.000 € hasta más de 1.000.000 €.
 
-- **¿Ofrecen servicios de alquiler?**
-  - Información no especificada, se recomienda consultar directamente.
-
-## Notas
-- Se utilizan cookies para análisis y publicidad.
+- **¿Qué características se pueden filtrar en la búsqueda de propiedades?**
+  - Se pueden filtrar por tipo de propiedad, localidad, precio, número de habitaciones, baños, y superficie.
 ---
 
 Si no encuentras la respuesta en la base de conocimientos:
