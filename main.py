@@ -37,7 +37,24 @@ def demo_expired() -> bool:
         return False
 
 # ── Notificaciones de interés ──────────────────────────────────────────────────
-N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "https://n8n-produccion.navi-ol.xyz/webhook/1e166278-bf44-47d7-b2da-79c501300a88")
+N8N_WEBHOOK_URL        = os.getenv("N8N_WEBHOOK_URL", "https://n8n-produccion.navi-ol.xyz/webhook/1e166278-bf44-47d7-b2da-79c501300a88")
+N8N_MESSAGE_LOGGER_URL = os.getenv("N8N_MESSAGE_LOGGER_URL", "https://n8n-produccion.navi-ol.xyz/webhook/mensaje_inmobilaria")
+
+async def log_interaction(platform: str, user_message: str, bot_reply: str):
+    """Envía un log del mensaje al webhook de n8n para almacenamiento centralizado."""
+    payload = {
+        "event": "new_message",
+        "business_name": BUSINESS_NAME,
+        "platform": platform,
+        "user_message": user_message,
+        "bot_reply": bot_reply,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            await client.post(N8N_MESSAGE_LOGGER_URL, json=payload)
+    except Exception as e:
+        print(f"[Log Error] {e}")
 
 async def notify_interest(business_name: str, timestamp: str, extra: str = ""):
     """Envía notificación al webhook de n8n cuando un cliente muestra interés."""
@@ -129,6 +146,11 @@ async def chat(request: Request):
             return JSONResponse({"error": "messages vacíos"}, status_code=400)
 
         reply = await call_openai(messages, channel="web")
+        
+        # Log interactivo (opcionalmente silenciado en errores)
+        user_text = messages[-1].get("content", "") if messages else ""
+        asyncio.create_task(log_interaction("web", user_text, reply))
+
         return {"reply": reply}
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
@@ -186,6 +208,9 @@ async def whatsapp_webhook(request: Request):
                     headers={"apikey": EVOLUTION_API_KEY, "Content-Type": "application/json"},
                     json={"number": remote_jid, "textMessage": {"text": reply}}
                 )
+
+        # Log interactivo (WhatsApp)
+        asyncio.create_task(log_interaction("whatsapp", text, reply))
 
         return {"status": "ok", "replied": True}
 
