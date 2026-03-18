@@ -52,7 +52,7 @@ async def log_interaction(platform: str, user_message: str, bot_reply: str):
     }
     try:
         async with httpx.AsyncClient(timeout=10) as client:
-            await client.post(N8N_MESSAGE_LOGGER_URL, json=payload)
+            await client.get(N8N_MESSAGE_LOGGER_URL, params=payload)
     except Exception as e:
         print(f"[Log Error] {e}")
 
