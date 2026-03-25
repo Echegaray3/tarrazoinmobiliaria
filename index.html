@@ -81,6 +81,28 @@
       transition: transform 0.2s;
     }
     .chat-toggle-btn:hover { transform: scale(1.05); }
+    /* Floating badge above the chat button */
+    .chat-toggle-badge {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      background: rgba(15, 23, 42, 0.9);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+    }
+    .chat-toggle-badge.warning {
+      background: #fbbf24;
+      color: #78350f;
+    }
     /* Header */
     .chat-header {
       background: var(--primary);
@@ -238,6 +260,30 @@
       align-self: flex-start;
       margin-top: 2px;
     }
+    /* Countdown button */
+    .demo-countdown {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 6px;
+      padding: 4px 10px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      color: rgba(255,255,255,0.95);
+      font-size: 10px;
+      font-weight: 600;
+      cursor: default;
+      letter-spacing: 0.3px;
+      backdrop-filter: blur(4px);
+      transition: background 0.3s;
+    }
+    .demo-countdown .cd-icon { font-size: 11px; }
+    .demo-countdown.warning {
+      background: rgba(251,191,36,0.25);
+      border-color: rgba(251,191,36,0.5);
+      color: #fde68a;
+    }
     /* Interested button */
     .interested-btn {
       display: block;
@@ -290,6 +336,7 @@
 
 <iframe class="background-iframe" src="https://www.tarrazoinmobiliaria.com/" title="Fondo"></iframe>
 
+<div class="chat-toggle-badge" id="chatBubbleCountdown" style="display: none;">⏳ Cargando...</div>
 <button id="chatToggle" class="chat-toggle-btn"><img src='https://www.tarrazoinmobiliaria.com/crm/pages/agencies/tarrazo/assets/logo-alt.svg' style='width:80%; height:80%; object-fit:contain; border-radius: 4px;'></button>
 
 <div class="chat-wrapper" id="chatWrapper">
@@ -301,6 +348,7 @@
         <span class="status-dot"></span> Asistente virtual activo
       </div>
       <span class="demo-badge">Demo &middot; Navi</span>
+      <span class="demo-countdown" id="demoCountdown" title="Fecha de expiración de la demo">⏳ Cargando...</span>
     </div>
   </div>
 
@@ -364,14 +412,66 @@
   const expiredOverlay= document.getElementById('expiredOverlay');
   const history       = [];
 
-  // ── TTL check (client-side optional extra) ────────────────────────────────
+  // ── TTL check + countdown ──────────────────────────────────────────────────
+  const countdownEl = document.getElementById('demoCountdown');
+  const bubbleCountdownEl = document.getElementById('chatBubbleCountdown');
+  let _expiresAt = null;
+
   async function checkExpired() {
     try {
       const r = await fetch('/health');
       const d = await r.json();
-      if (d.status === 'expired') expiredOverlay.classList.add('visible');
-    } catch(_) {}
+      if (d.status === 'expired') {
+        expiredOverlay.classList.add('visible');
+        if (countdownEl) countdownEl.textContent = '⏱️ Demo expirada';
+        if (bubbleCountdownEl) bubbleCountdownEl.textContent = '⏱️ Expirada';
+        return;
+      }
+      if (d.demo_expires_at && d.demo_expires_at !== 'never') {
+        _expiresAt = new Date(d.demo_expires_at);
+        if (bubbleCountdownEl) bubbleCountdownEl.style.display = 'block';
+        startCountdown();
+      } else {
+        if (countdownEl) countdownEl.style.display = 'none';
+        if (bubbleCountdownEl) bubbleCountdownEl.style.display = 'none';
+      }
+    } catch(_) {
+      if (countdownEl) countdownEl.style.display = 'none';
+      if (bubbleCountdownEl) bubbleCountdownEl.style.display = 'none';
+    }
   }
+
+  function startCountdown() {
+    function tick() {
+      if (!_expiresAt) return;
+      const now  = new Date();
+      const diff = _expiresAt - now;
+      if (diff <= 0) {
+        if (countdownEl) countdownEl.textContent = '⏱️ Demo expirada';
+        if (bubbleCountdownEl) bubbleCountdownEl.textContent = '⏱️ Expirada';
+        expiredOverlay.classList.add('visible');
+        return;
+      }
+      const days  = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const mins  = Math.floor((diff % 3600000)  / 60000);
+      const secs  = Math.floor((diff % 60000)    / 1000);
+      const label = days > 0
+        ? `⏳ Expira en ${days}d ${hours}h ${mins}m`
+        : `⏳ Expira en ${hours}h ${mins}m ${secs}s`;
+      
+      if (countdownEl) countdownEl.textContent = label;
+      if (bubbleCountdownEl) bubbleCountdownEl.textContent = label;
+      
+      const isWarning = diff < 172800000;
+      if (countdownEl) countdownEl.classList.toggle('warning', isWarning);
+      if (bubbleCountdownEl) bubbleCountdownEl.classList.toggle('warning', isWarning);
+      
+      setTimeout(tick, 1000);
+    }
+    tick();
+  }
+
   checkExpired();
 
   // ── Toggle chat ──────────────────────────────────────────────────────────
@@ -379,9 +479,11 @@
     chatWrapper.classList.toggle('open');
     if (chatWrapper.classList.contains('open')) {
       chatToggle.innerHTML = '<span style="font-size:22px;color:white">✕</span>';
+      if (bubbleCountdownEl) bubbleCountdownEl.style.opacity = '0';
       inputEl.focus();
     } else {
       chatToggle.innerHTML = '💬';
+      if (bubbleCountdownEl) bubbleCountdownEl.style.opacity = '1';
     }
   });
 
